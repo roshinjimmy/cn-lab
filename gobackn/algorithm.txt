@@ -1,0 +1,74 @@
+Server
+
+BEGIN
+    Initialize server socket
+    Bind socket to PORT
+    Listen for incoming connections
+    Accept connection from client
+
+    WHILE connection is active
+        Clear buffer
+        Receive packet from client
+        IF packet received THEN
+            Extract packet number from received data
+            Display "Received packet packet_number"
+
+            Generate random number (0-99) to simulate ACK loss
+            IF random number < LOSS_PROBABILITY THEN
+                Display "ACK for packet packet_number lost!"
+            ELSE
+                Simulate processing delay
+                Display "ACK sent for packet packet_number"
+                Convert packet_number to string and send it as ACK
+            ENDIF
+        ENDIF
+    ENDWHILE
+
+    Close client socket
+    Close server socket
+END
+
+
+Client 
+
+BEGIN
+    Initialize client socket
+    Connect to server at SERVER_IP and PORT
+
+    Set timeout for receiving ACK
+
+    base ← 1
+    next_to_send ← 1
+    packets_acked ← 0
+
+    WHILE packets_acked < TOTAL_PACKETS DO
+        // Send all packets in the current window
+        WHILE next_to_send < base + WINDOW_SIZE AND next_to_send ≤ TOTAL_PACKETS DO
+            Convert next_to_send to string
+            Send packet next_to_send to server
+            Display "Sending packet next_to_send"
+            Increment next_to_send
+        ENDWHILE
+
+        // Wait for ACK
+        Clear buffer
+        Read ACK from server
+
+        IF ACK received THEN
+            Convert received ACK to integer
+            Display "ACK received for packet ack"
+
+            // Slide window if ACK matches base
+            IF ack == base THEN
+                base ← ack + 1
+                packets_acked ← ack
+            ENDIF
+        ELSE
+            Display "Timeout! Retransmitting from packet base..."
+            next_to_send ← base  // Reset next_to_send for retransmission
+        ENDIF
+    ENDWHILE
+
+    Display "All packets sent successfully"
+    Close client socket
+END
