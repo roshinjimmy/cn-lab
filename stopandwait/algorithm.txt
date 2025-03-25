@@ -1,0 +1,56 @@
+Server
+
+BEGIN
+    Initialize server socket
+    Bind socket to PORT
+    Listen for incoming connections
+    Accept connection from client
+
+    WHILE connection is active
+        Receive packet from client
+        IF packet received THEN
+            Display received packet
+            Generate random number (0-99) for ACK probability
+            IF random number < ACK probability (e.g., 70%) THEN
+                Send "ACK" to client
+                Display "ACK sent"
+            ELSE
+                Display "ACK lost"
+            ENDIF
+        ENDIF
+        Clear buffer
+    ENDWHILE
+
+    Close client socket
+    Close server socket
+END
+
+
+Client 
+
+BEGIN
+    Initialize client socket
+    Connect to server at SERVER_IP and PORT
+
+    Set timeout for receiving ACK
+
+    packet_number ← 1
+    WHILE packet_number ≤ 5 DO
+        Convert packet_number to string
+        Send packet to server
+        Display "Sending packet packet_number"
+
+        Wait for ACK within timeout
+        IF ACK received THEN
+            Display "ACK received for packet packet_number"
+            Increment packet_number
+        ELSE
+            Display "Timeout! Retransmitting packet packet_number"
+        ENDIF
+
+        Clear buffer
+    ENDWHILE
+
+    Display "All packets sent successfully"
+    Close client socket
+END
