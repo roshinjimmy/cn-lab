@@ -1,0 +1,63 @@
+BEGIN  
+    Initialize WINDOW_SIZE, TOTAL_FRAMES, and LOSS_PROBABILITY  
+    Seed random number generator  
+
+    FUNCTION send_frame(frame_number):  
+        Display "Sending frame frame_number..."  
+        Simulate delay  
+        Generate a random number between 0 and 99  
+        IF random number < LOSS_PROBABILITY THEN  
+            Display "Frame frame_number lost during transmission!"  
+            RETURN 0  // Frame lost  
+        ELSE  
+            Display "Frame frame_number sent successfully."  
+            RETURN 1  // Frame sent successfully  
+        ENDIF  
+    END FUNCTION  
+
+    FUNCTION receive_ack(frame_number):  
+        Display "Receiving acknowledgment for frame frame_number..."  
+        Simulate delay  
+        Generate a random number between 0 and 99  
+        IF random number < LOSS_PROBABILITY THEN  
+            Display "Acknowledgment for frame frame_number lost!"  
+            RETURN 0  // ACK lost  
+        ELSE  
+            Display "Acknowledgment for frame frame_number received."  
+            RETURN 1  // ACK received  
+        ENDIF  
+    END FUNCTION  
+
+    FUNCTION selective_repeat_arq():  
+        Initialize sent_frames[TOTAL_FRAMES] to 0  
+        Initialize ack_received[TOTAL_FRAMES] to 0  
+        base ← 0  // Start of sliding window  
+
+        WHILE base < TOTAL_FRAMES DO  
+            // Send frames within the window  
+            FOR i ← base to base + WINDOW_SIZE AND i < TOTAL_FRAMES DO  
+                IF sent_frames[i] == 0 THEN  
+                    sent_frames[i] ← send_frame(i)  // Send frame if not sent  
+                ENDIF  
+            ENDFOR  
+
+            // Check for acknowledgments  
+            FOR i ← base to base + WINDOW_SIZE AND i < TOTAL_FRAMES DO  
+                IF sent_frames[i] == 1 AND ack_received[i] == 0 THEN  
+                    ack_received[i] ← receive_ack(i)  // Receive acknowledgment  
+                ENDIF  
+            ENDFOR  
+
+            // Slide the window if the base frame is acknowledged  
+            WHILE base < TOTAL_FRAMES AND ack_received[base] == 1 DO  
+                Display "Sliding window forward. Frame base fully acknowledged."  
+                base ← base + 1  
+            ENDWHILE  
+        ENDWHILE  
+
+        Display "All frames sent and acknowledged successfully."  
+    END FUNCTION  
+
+    // Main execution  
+    CALL selective_repeat_arq()  
+END  
